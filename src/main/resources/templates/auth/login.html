@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login – JobPortal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body class="auth-body">
+
+<div class="auth-wrapper">
+    <div class="auth-left">
+        <div class="auth-brand">
+            <a th:href="@{/}" class="nav-brand"><span class="brand-icon">◈</span> JobPortal</a>
+        </div>
+        <div class="auth-left-content">
+            <h2>Welcome back.</h2>
+            <p>Your next career move is waiting for you.</p>
+            <div class="auth-features">
+                <div class="af-item">✓ Track all your applications</div>
+                <div class="af-item">✓ Get shortlisting notifications</div>
+                <div class="af-item">✓ Connect with top employers</div>
+            </div>
+        </div>
+        <div class="auth-demo-creds">
+            <p><strong>Demo Credentials:</strong></p>
+            <p>Student: student@gmail.com / student123</p>
+            <p>Employer: employer@techcorp.com / employer123</p>
+            <p>Admin: admin@jobportal.com / admin123</p>
+        </div>
+    </div>
+
+    <div class="auth-right">
+        <div class="auth-card">
+            <h1 class="auth-title">Sign In</h1>
+            <p class="auth-sub">Don't have an account? <a th:href="@{/register}">Register here</a></p>
+
+            <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+            <div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+
+            <form th:action="@{/login}" method="post" class="auth-form">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="username" class="form-input" placeholder="you@example.com" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full btn-lg">Sign In</button>
+            </form>
+
+            <p class="auth-footer-link">
+                New here? <a th:href="@{/register}">Create an account →</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

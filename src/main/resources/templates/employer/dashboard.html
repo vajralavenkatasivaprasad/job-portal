@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Employer Dashboard – JobPortal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body class="dashboard-body">
+
+<nav class="navbar navbar-dashboard">
+    <div class="nav-container">
+        <a th:href="@{/}" class="nav-brand"><span class="brand-icon">◈</span><span>JobPortal</span></a>
+        <div class="nav-links">
+            <a th:href="@{/employer/jobs}" class="nav-link">My Jobs</a>
+            <a th:href="@{/employer/jobs/new}" class="btn btn-primary btn-sm">+ Post Job</a>
+            <form th:action="@{/logout}" method="post" style="display:inline">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-ghost btn-sm">Logout</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="flash-container" th:if="${success}"><div class="flash flash-success" th:text="${success}"></div></div>
+
+<div class="dashboard-layout">
+    <aside class="dash-sidebar">
+        <div class="dash-profile-mini">
+            <div class="avatar emp-avatar" th:text="${user.fullName?.charAt(0)}">E</div>
+            <div>
+                <div class="dash-name" th:text="${user.companyName ?: user.fullName}">Company</div>
+                <div class="dash-role">Employer</div>
+            </div>
+        </div>
+        <nav class="dash-nav">
+            <a th:href="@{/employer/dashboard}" class="dash-nav-item active">🏠 Dashboard</a>
+            <a th:href="@{/employer/jobs}" class="dash-nav-item">💼 My Jobs</a>
+            <a th:href="@{/employer/jobs/new}" class="dash-nav-item">➕ Post New Job</a>
+            <a th:href="@{/employer/profile}" class="dash-nav-item">🏢 Company Profile</a>
+        </nav>
+    </aside>
+
+    <main class="dash-main">
+        <div class="dash-welcome">
+            <h1>Welcome, <span th:text="${user.companyName ?: user.fullName}">Company</span> 👋</h1>
+            <p>Here's your hiring activity overview.</p>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">💼</div>
+                <div class="stat-val" th:text="${totalJobs}">0</div>
+                <div class="stat-name">Active Jobs</div>
+            </div>
+            <div class="stat-card stat-highlight">
+                <div class="stat-icon">📨</div>
+                <div class="stat-val" th:text="${totalApplications}">0</div>
+                <div class="stat-name">Total Applications</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-val" th:text="${shortlisted}">0</div>
+                <div class="stat-name">Shortlisted</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏢</div>
+                <div class="stat-val" th:text="${jobs.size()}">0</div>
+                <div class="stat-name">Total Postings</div>
+            </div>
+        </div>
+
+        <!-- RECENT APPLICATIONS -->
+        <div class="dash-section">
+            <div class="dash-section-header">
+                <h2>Recent Applications</h2>
+                <a th:href="@{/employer/jobs}" class="btn btn-sm btn-outline">View Jobs</a>
+            </div>
+            <div th:if="${recentApplications.empty}" class="empty-state">
+                <p>No applications yet. <a th:href="@{/employer/jobs/new}">Post a job</a> to start receiving them.</p>
+            </div>
+            <div th:unless="${recentApplications.empty}" class="app-table-wrapper">
+                <table class="data-table">
+                    <thead><tr><th>Applicant</th><th>Job</th><th>Applied</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody>
+                        <tr th:each="app : ${recentApplications}">
+                            <td><strong th:text="${app.applicant.fullName}">Name</strong></td>
+                            <td th:text="${app.job.title}">Job</td>
+                            <td th:text="${#temporals.format(app.appliedAt, 'dd MMM')}">Date</td>
+                            <td><span th:class="'status-badge status-' + ${app.status.name().toLowerCase().replace('_','-')}"
+                                      th:text="${app.status.name().replace('_',' ')}">Status</span></td>
+                            <td><a th:href="@{/employer/jobs/{id}/applicants(id=${app.job.id})}" class="link-btn">Manage</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- MY JOBS MINI -->
+        <div class="dash-section">
+            <div class="dash-section-header">
+                <h2>Posted Jobs</h2>
+                <a th:href="@{/employer/jobs/new}" class="btn btn-sm btn-primary">+ Post New</a>
+            </div>
+            <div th:if="${jobs.empty}" class="empty-state">
+                <p>No jobs posted yet.</p>
+            </div>
+            <div class="mini-jobs-list" th:unless="${jobs.empty}">
+                <div class="mini-job-row" th:each="job, iter : ${jobs}" th:if="${iter.index < 5}">
+                    <div class="mjr-info">
+                        <strong th:text="${job.title}">Title</strong>
+                        <span th:text="${job.location} + ' · ' + ${job.jobType?.name().replace('_',' ')}">Info</span>
+                    </div>
+                    <div class="mjr-actions">
+                        <span th:class="${job.active} ? 'badge badge-success' : 'badge badge-gray'"
+                              th:text="${job.active} ? 'Active' : 'Inactive'">Active</span>
+                        <a th:href="@{/employer/jobs/{id}/applicants(id=${job.id})}" class="link-btn">
+                            <span th:text="${job.applications.size()}">0</span> applicants
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

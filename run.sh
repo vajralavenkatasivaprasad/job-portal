@@ -1,0 +1,15 @@
+#!/bin/bash
+echo "============================================"
+echo " JobPortal - Starting Application"
+echo "============================================"
+echo ""
+echo "Using H2 in-memory database (no setup needed)"
+echo ""
+echo "Once started, open: http://localhost:8080"
+echo ""
+echo "Demo credentials:"
+echo "  Admin:    admin@jobportal.com / admin123"
+echo "  Employer: employer@techcorp.com / employer123"
+echo "  Student:  student@gmail.com / student123"
+echo ""
+./mvnw spring-boot:run

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobPortal – Find Your Dream Job</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <a th:href="@{/}" class="nav-brand">
+            <span class="brand-icon">◈</span><span>JobPortal</span>
+        </a>
+        <div class="nav-links">
+            <a th:href="@{/jobs}" class="nav-link">Browse Jobs</a>
+            <div sec:authorize="isAnonymous()">
+                <a th:href="@{/login}" class="nav-link">Login</a>
+                <a th:href="@{/register}" class="btn btn-primary btn-sm">Get Started</a>
+            </div>
+            <div sec:authorize="isAuthenticated()" class="nav-auth">
+                <span sec:authorize="hasRole('STUDENT')"><a th:href="@{/student/dashboard}" class="nav-link">Dashboard</a></span>
+                <span sec:authorize="hasRole('EMPLOYER')"><a th:href="@{/employer/dashboard}" class="nav-link">Dashboard</a></span>
+                <span sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin/dashboard}" class="nav-link">Admin</a></span>
+                <form th:action="@{/logout}" method="post" style="display:inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-ghost btn-sm">Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="flash-container" th:if="${success}">
+    <div class="flash flash-success" th:text="${success}"></div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+        <div class="hero-badge">🚀 <span th:text="${totalJobs} + ' active jobs'">400+ active jobs</span></div>
+        <h1 class="hero-title">Find Work That<br><span class="hero-accent">Matters To You</span></h1>
+        <p class="hero-subtitle">Connect with top employers. Build your career.<br>Your next opportunity is one click away.</p>
+        <form action="/jobs" method="get" class="hero-search">
+            <input type="text" name="keyword" placeholder="Job title, skills, company..." class="search-input">
+            <input type="text" name="location" placeholder="Location..." class="search-input search-loc">
+            <button type="submit" class="btn btn-primary">Search Jobs</button>
+        </form>
+        <div class="hero-tags">
+            <a href="/jobs?category=IT_SOFTWARE" class="tag">IT Software</a>
+            <a href="/jobs?category=FINANCE" class="tag">Finance</a>
+            <a href="/jobs?category=MARKETING" class="tag">Marketing</a>
+            <a href="/jobs?category=HEALTHCARE" class="tag">Healthcare</a>
+            <a href="/jobs?jobType=INTERNSHIP" class="tag">Internships</a>
+            <a href="/jobs?jobType=REMOTE" class="tag">Remote</a>
+        </div>
+    </div>
+    <div class="hero-visual">
+        <div class="hero-card card-float-1">
+            <div class="hc-icon">💼</div>
+            <div class="hc-text"><strong>Java Developer</strong><br><small>TechCorp · Bangalore</small></div>
+        </div>
+        <div class="hero-card card-float-2">
+            <div class="hc-icon">📊</div>
+            <div class="hc-text"><strong>Finance Analyst</strong><br><small>FinPlus · Mumbai</small></div>
+        </div>
+        <div class="hero-card card-float-3">
+            <div class="hc-icon">✅</div>
+            <div class="hc-text"><strong>Shortlisted!</strong><br><small>Congrats, Ravi Kumar</small></div>
+        </div>
+    </div>
+</section>
+
+<!-- STATS -->
+<section class="stats-strip">
+    <div class="stat-item"><span class="stat-num" th:text="${totalJobs}">0</span><span class="stat-label">Open Roles</span></div>
+    <div class="stat-divider">·</div>
+    <div class="stat-item"><span class="stat-num">500+</span><span class="stat-label">Companies</span></div>
+    <div class="stat-divider">·</div>
+    <div class="stat-item"><span class="stat-num">12K+</span><span class="stat-label">Job Seekers</span></div>
+    <div class="stat-divider">·</div>
+    <div class="stat-item"><span class="stat-num">98%</span><span class="stat-label">Satisfaction</span></div>
+</section>
+
+<!-- RECENT JOBS -->
+<section class="section">
+    <div class="section-container">
+        <div class="section-header">
+            <h2>Latest Opportunities</h2>
+            <a th:href="@{/jobs}" class="btn btn-outline">View All Jobs →</a>
+        </div>
+        <div class="jobs-grid" th:if="${recentJobs != null and !recentJobs.empty}">
+            <div class="job-card" th:each="job : ${recentJobs}">
+                <div class="job-card-header">
+                    <div class="job-company-icon" th:text="${job.companyName?.charAt(0)}">T</div>
+                    <div class="job-meta">
+                        <span class="job-type-badge" th:text="${job.jobType?.name().replace('_',' ')}">Full Time</span>
+                    </div>
+                </div>
+                <h3 class="job-title">
+                    <a th:href="@{/jobs/{id}(id=${job.id})}" th:text="${job.title}">Job Title</a>
+                </h3>
+                <p class="job-company" th:text="${job.companyName}">Company</p>
+                <div class="job-tags">
+                    <span class="jtag" th:text="${job.location}">Location</span>
+                    <span class="jtag" th:text="${job.experienceLevel?.name().replace('_',' ')}">Level</span>
+                    <span class="jtag" th:text="${job.category?.name().replace('_',' ')}">Category</span>
+                </div>
+                <div class="job-footer">
+                    <span class="job-salary"
+                          th:if="${job.salaryMin != null}"
+                          th:text="'₹' + ${#numbers.formatDecimal(job.salaryMin,0,'COMMA',0,'POINT')} + ' – ' + ${#numbers.formatDecimal(job.salaryMax,0,'COMMA',0,'POINT')}">
+                        ₹4L – ₹7L
+                    </span>
+                    <a th:href="@{/jobs/{id}(id=${job.id})}" class="btn btn-sm btn-primary">Apply</a>
+                </div>
+            </div>
+        </div>
+        <div th:if="${recentJobs == null or recentJobs.empty}" class="empty-state">
+            <p>No jobs posted yet. Check back soon!</p>
+        </div>
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section section-alt">
+    <div class="section-container">
+        <h2 class="text-center">How It Works</h2>
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-num">01</div>
+                <h3>Create Your Profile</h3>
+                <p>Sign up as a student or employer. Fill your profile with skills, experience, and upload your resume.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-num">02</div>
+                <h3>Find Opportunities</h3>
+                <p>Browse hundreds of jobs. Filter by category, location, experience level and job type.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-num">03</div>
+                <h3>Apply & Track</h3>
+                <p>Apply with one click. Track your application status — Applied, Shortlisted, Interview, Offered.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" sec:authorize="isAnonymous()">
+    <div class="cta-content">
+        <h2>Ready to Start?</h2>
+        <p>Join thousands of students and employers already using JobPortal.</p>
+        <div class="cta-buttons">
+            <a th:href="@{/register}" class="btn btn-primary btn-lg">Register as Student</a>
+            <a th:href="@{/register}" class="btn btn-outline btn-lg">Post a Job</a>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-brand">
+            <div><span class="brand-icon">◈</span> JobPortal</div>
+            <p>Connecting talent with opportunity.</p>
+        </div>
+        <div class="footer-links">
+            <a th:href="@{/jobs}">Browse Jobs</a>
+            <a th:href="@{/register}">Register</a>
+            <a th:href="@{/login}">Login</a>
+        </div>
+        <p class="footer-copy">© 2025 JobPortal. Built with Spring Boot + Thymeleaf.</p>
+    </div>
+</footer>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

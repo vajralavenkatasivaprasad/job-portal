@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${job.title} + ' – JobPortal'">Job Detail</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <a th:href="@{/}" class="nav-brand"><span class="brand-icon">◈</span><span>JobPortal</span></a>
+        <div class="nav-links">
+            <a th:href="@{/jobs}" class="nav-link">Browse Jobs</a>
+            <div sec:authorize="isAnonymous()">
+                <a th:href="@{/login}" class="nav-link">Login</a>
+                <a th:href="@{/register}" class="btn btn-primary btn-sm">Get Started</a>
+            </div>
+            <div sec:authorize="isAuthenticated()" class="nav-auth">
+                <span sec:authorize="hasRole('STUDENT')"><a th:href="@{/student/dashboard}" class="nav-link">Dashboard</a></span>
+                <span sec:authorize="hasRole('EMPLOYER')"><a th:href="@{/employer/dashboard}" class="nav-link">Dashboard</a></span>
+                <form th:action="@{/logout}" method="post" style="display:inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-ghost btn-sm">Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="flash-container" th:if="${success}">
+    <div class="flash flash-success" th:text="${success}"></div>
+</div>
+
+<div class="detail-layout">
+    <div class="detail-main">
+        <!-- JOB HEADER -->
+        <div class="detail-card">
+            <div class="detail-header">
+                <div class="detail-company-icon" th:text="${job.companyName?.charAt(0)}">T</div>
+                <div class="detail-title-block">
+                    <h1 th:text="${job.title}">Job Title</h1>
+                    <p class="detail-company" th:text="${job.companyName}">Company</p>
+                </div>
+                <div class="detail-actions">
+                    <!-- Student Apply Button -->
+                    <div sec:authorize="hasRole('STUDENT')">
+                        <div th:if="${hasApplied}">
+                            <span class="badge badge-success">✓ Applied</span>
+                        </div>
+                        <div th:unless="${hasApplied}">
+                            <button onclick="document.getElementById('applyModal').style.display='flex'"
+                                    class="btn btn-primary btn-lg">Apply Now</button>
+                        </div>
+                    </div>
+                    <div sec:authorize="isAnonymous()">
+                        <a th:href="@{/login}" class="btn btn-primary btn-lg">Login to Apply</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-tags">
+                <span class="dtag"><strong>📍</strong> <span th:text="${job.location}">Location</span></span>
+                <span class="dtag"><strong>💼</strong> <span th:text="${job.jobType?.name().replace('_',' ')}">Type</span></span>
+                <span class="dtag"><strong>📊</strong> <span th:text="${job.experienceLevel?.name().replace('_',' ')}">Level</span></span>
+                <span class="dtag"><strong>🏷</strong> <span th:text="${job.category?.name().replace('_',' ')}">Category</span></span>
+                <span class="dtag" th:if="${job.vacancies != null}"><strong>👥</strong> <span th:text="${job.vacancies} + ' vacancies'">Vacancies</span></span>
+                <span class="dtag" th:if="${job.applicationDeadline != null}">
+                    <strong>📅</strong> <span th:text="'Deadline: ' + ${#temporals.format(job.applicationDeadline, 'dd MMM yyyy')}">Date</span>
+                </span>
+            </div>
+
+            <div class="salary-block" th:if="${job.salaryMin != null}">
+                <span class="salary-label">Salary Range</span>
+                <span class="salary-amount"
+                      th:text="'₹' + ${#numbers.formatDecimal(job.salaryMin,0,'COMMA',0,'POINT')} + ' – ₹' + ${#numbers.formatDecimal(job.salaryMax,0,'COMMA',0,'POINT')} + ' / year'">
+                    ₹4,00,000 – ₹7,00,000 / year
+                </span>
+            </div>
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div class="detail-card">
+            <h2>Job Description</h2>
+            <div class="job-description" th:utext="${job.description?.replace(T(System).lineSeparator(), '<br>')}">
+                Description
+            </div>
+        </div>
+
+        <!-- SKILLS -->
+        <div class="detail-card" th:if="${job.skillsRequired != null}">
+            <h2>Skills Required</h2>
+            <div class="skills-chips">
+                <span class="skill-chip" th:each="skill : ${job.skillsRequired?.split(',')}"
+                      th:text="${#strings.trim(skill)}">Skill</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="detail-sidebar">
+        <div class="sidebar-card">
+            <h3>About the Company</h3>
+            <div class="company-icon-lg" th:text="${job.companyName?.charAt(0)}">T</div>
+            <h4 th:text="${job.companyName}">Company</h4>
+            <p th:if="${job.employer?.companyDescription}" th:text="${job.employer.companyDescription}">Description</p>
+            <p th:unless="${job.employer?.companyDescription}">A leading company in their field.</p>
+        </div>
+        <div class="sidebar-card">
+            <h3>Job Summary</h3>
+            <div class="summary-item"><span>Posted</span><span th:text="${#temporals.format(job.createdAt, 'dd MMM yyyy')}">Date</span></div>
+            <div class="summary-item"><span>Category</span><span th:text="${job.category?.name().replace('_',' ')}">Category</span></div>
+            <div class="summary-item"><span>Type</span><span th:text="${job.jobType?.name().replace('_',' ')}">Type</span></div>
+            <div class="summary-item"><span>Level</span><span th:text="${job.experienceLevel?.name().replace('_',' ')}">Level</span></div>
+            <div class="summary-item" th:if="${job.vacancies != null}"><span>Openings</span><span th:text="${job.vacancies}">1</span></div>
+        </div>
+        <a th:href="@{/jobs}" class="btn btn-outline btn-full">← Back to Jobs</a>
+    </aside>
+</div>
+
+<!-- APPLY MODAL -->
+<div id="applyModal" class="modal-overlay" style="display:none" sec:authorize="hasRole('STUDENT')">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Apply for <span th:text="${job.title}">Job</span></h2>
+            <button onclick="document.getElementById('applyModal').style.display='none'" class="modal-close">✕</button>
+        </div>
+        <form th:action="@{/student/apply/{id}(id=${job.id})}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="form-group">
+                <label class="form-label">Cover Letter (optional)</label>
+                <textarea name="coverLetter" class="form-input" rows="6"
+                          placeholder="Introduce yourself and explain why you're a great fit..."></textarea>
+            </div>
+            <div th:if="${currentUser?.resumePath != null}" class="resume-notice">
+                ✓ Your uploaded resume will be attached automatically.
+            </div>
+            <div th:unless="${currentUser?.resumePath != null}" class="resume-notice warn">
+                ⚠ No resume uploaded. <a th:href="@{/student/profile}">Upload one first</a> for best results.
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="document.getElementById('applyModal').style.display='none'"
+                        class="btn btn-ghost">Cancel</button>
+                <button type="submit" class="btn btn-primary">Submit Application</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<footer class="footer"><div class="footer-container"><p>© 2025 JobPortal</p></div></footer>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

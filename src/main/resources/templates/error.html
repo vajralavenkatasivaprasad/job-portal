@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><title>Error – JobPortal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-container">
+        <a th:href="@{/}" class="nav-brand"><span class="brand-icon">◈</span><span>JobPortal</span></a>
+    </div>
+</nav>
+<div class="error-page">
+    <div>
+        <div class="error-code">◈</div>
+        <h1 class="error-title" th:text="${errorTitle} ?: 'Oops!'">Error</h1>
+        <p class="error-msg" th:text="${errorMessage} ?: 'Something went wrong. Please try again.'">Message</p>
+        <div style="display:flex;gap:12px;justify-content:center">
+            <a th:href="@{/}" class="btn btn-primary">Go Home</a>
+            <a href="javascript:history.back()" class="btn btn-ghost">← Go Back</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
